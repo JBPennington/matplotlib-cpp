@@ -33,6 +33,10 @@
 
 # Build
 /examples/build/*
+bazel-*
 
 # vim temp files
 *.sw*
+
+# IDE files
+.clwb

@@ -145,6 +145,9 @@ struct _interpreter {
     }
 
 private:
+    std::string old_python_launcher{};
+    std::string old_python_home{};
+    std::string old_python_path{};
 
 #ifndef WITHOUT_NUMPY
 #  if PY_MAJOR_VERSION >= 3
@@ -172,6 +175,17 @@ private:
         char name[] = "plotting";
 #endif
         Py_SetProgramName(name);
+#ifdef BAZEL_BUILD
+        // Copy current environment variables
+        old_python_launcher = getenv("__PYVENV_LAUNCHER__") ? getenv("__PYVENV_LAUNCHER__") : "";
+        old_python_home = getenv("PYTHONHOME") ? getenv("PYTHONHOME") : "";
+        old_python_path = getenv("PYTHONPATH") ? getenv("PYTHONPATH") : "";
+
+        // Set variables from Bazel definitions in tools/embedding.bzl
+        setenv("__PYVENV_LAUNCHER__", CPP_PYVENV_LAUNCHER, true);
+        setenv("PYTHONHOME", CPP_PYTHON_HOME, true);
+        setenv("PYTHONPATH", CPP_PYTHON_PATH, true);
+#endif
         Py_Initialize();
 
         wchar_t const *dummy_args[] = {L"Python", NULL};  // const is needed because literals must not be modified
@@ -286,6 +300,12 @@ private:
 
     ~_interpreter() {
         Py_Finalize();
+
+#ifdef BAZEL_BUILD
+        setenv("__PYVENV_LAUNCHER__", old_python_launcher.c_str(), true);
+        setenv("PYTHONHOME", old_python_home.c_str(), true);
+        setenv("PYTHONPATH", old_python_path.c_str(), true);
+#endif
     }
 };
 

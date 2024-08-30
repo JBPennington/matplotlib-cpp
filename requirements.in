@@ -1,0 +1,4 @@
+numpy<2
+matplotlib
+PyQt5
+PySide2

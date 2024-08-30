@@ -1,0 +1,25 @@
+load("@my_pip//:requirements.bzl", "all_requirements")
+load("@rules_python//python:pip.bzl", "compile_pip_requirements")
+load("//tools:embedding.bzl", "cc_py_library")
+
+# This stanza calls a rule that generates targets for managing pip dependencies
+# with pip-compile. To update, run `bazel run //:requirements.update`
+compile_pip_requirements(
+    name = "requirements",
+    src = "requirements.in",
+    requirements_txt = "requirements_lock.txt",
+    requirements_windows = "requirements_windows.txt",
+)
+
+cc_py_library(
+    name = "matplotlibcpp",
+    srcs = ["matplotlibcpp.h"],
+    hdrs = ["matplotlibcpp.h"],
+    includes = ["matplotlibcpp.h"],
+    py_deps = all_requirements,
+    visibility = ["//visibility:public"],
+    deps = [
+        "@rules_python//python/cc:current_py_cc_headers",
+        "@rules_python//python/cc:current_py_cc_libs",
+    ],
+)
